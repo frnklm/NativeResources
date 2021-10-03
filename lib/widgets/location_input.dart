@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+
+import 'package:native_resources/screens/map_screen.dart';
 import 'package:native_resources/utils/location_util.dart';
 
 class LocationInput extends StatefulWidget {
-  const LocationInput({Key? key}) : super(key: key);
+  final Function onSelectedLocation;
+  const LocationInput({
+    Key? key,
+    required this.onSelectedLocation,
+  }) : super(key: key);
 
   @override
   _LocationInputState createState() => _LocationInputState();
@@ -26,6 +33,32 @@ class _LocationInputState extends State<LocationInput> {
     setState(() {
       _previewImageUrl = staticMapImageUrl;
     });
+  }
+
+  //Função para chamar a tela de MapScreen
+  Future<void> _selectOnMap() async {
+    final LatLng selectedLocation = await Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => const MapScreen(),
+      ),
+    );
+
+    if (selectedLocation == null) return;
+
+    //acrescenta a locaização no preview do mapa
+    final staticMapImageUrl = LocationUtil.generetedLocation(
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude,
+    );
+
+    //muda o estado assim que o preview recebe os dados de location util
+    setState(() {
+      _previewImageUrl = staticMapImageUrl;
+    });
+
+    //recebe a localização selecionada no mapa
+    widget.onSelectedLocation(selectedLocation);
   }
 
   @override
@@ -62,7 +95,7 @@ class _LocationInputState extends State<LocationInput> {
             TextButton.icon(
               icon: const Icon(Icons.map),
               label: const Text('Selecione no mapa'),
-              onPressed: () {},
+              onPressed: _selectOnMap,
             ),
           ],
         )

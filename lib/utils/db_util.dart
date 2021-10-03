@@ -13,7 +13,7 @@ class DbUtil {
       //Sempre que rodar o DB pela primeira vez chamando onCreate
       onCreate: (db, version) {
         return db.execute(
-            'CREATE TABLE places (id TEXT PRIMARY KEY, title TEXT, image TEXT)');
+            'CREATE TABLE places (id TEXT PRIMARY KEY, title TEXT, image TEXT, lat REAL, lng REAL, address TEXT)');
       },
       version: 1,
     );

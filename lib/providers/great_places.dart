@@ -2,8 +2,10 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:native_resources/models/place.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:native_resources/models/place_location.dart';
 import 'package:native_resources/utils/db_util.dart';
+import 'package:native_resources/utils/location_util.dart';
 
 class GreatPlaces with ChangeNotifier {
   List<Place> _items = [];
@@ -20,6 +22,11 @@ class GreatPlaces with ChangeNotifier {
             title: item['title'],
             //File ta na imagem porque será inserido o path da imagem
             image: File(item['image']),
+            location: PlaceLocation(
+              latitude: item['lat'],
+              longitude: item['lng'],
+              address: item['address'],
+            ),
           ),
         )
         //toList para converter o MAP para um List
@@ -42,12 +49,19 @@ class GreatPlaces with ChangeNotifier {
     return _items[index];
   }
 
-  void addPlace(String title, File image) {
-    //adicionar local
+  //adicionar local
+  Future<void> addPlace(String title, File image, LatLng position) async {
+    String address = await LocationUtil.getAddress(position);
+
     final newPlace = Place(
       id: Random().nextDouble().toString(),
       title: title,
       image: image,
+      location: PlaceLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        address: address,
+      ),
     );
     _items.add(newPlace);
 
@@ -59,6 +73,9 @@ class GreatPlaces with ChangeNotifier {
           'title': newPlace.title,
           //no campo imagem será recebido o path da imagem
           'image': newPlace.image.path,
+          'lat': position.latitude,
+          'lng': position.longitude,
+          'address': address,
         });
     notifyListeners();
   }
